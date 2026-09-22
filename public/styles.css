@@ -385,6 +385,25 @@ body.mode-whot .holdem-only { display: none !important; }
   0%, 100% { box-shadow: 4px 4px 0 #2a0d0d, 0 0 0 rgba(248, 113, 113, 0); }
   50% { box-shadow: 4px 4px 0 #2a0d0d, 0 0 26px rgba(248, 113, 113, 0.55); }
 }
+/* Must-draw attention: transform + vibrate when draw is the only move. */
+.w-draw.needs-draw {
+  border-color: var(--gold);
+  transform: scale(1.07);
+  animation: must-draw-shake 0.9s ease-in-out infinite;
+}
+.w-draw.needs-draw .w-deck-ico { color: var(--gold); }
+.w-draw.needs-draw b { color: #fff; }
+@keyframes must-draw-shake {
+  0%, 100% { transform: scale(1.07) rotate(0deg); box-shadow: 4px 4px 0 #0c1830, 0 0 0 rgba(255, 212, 121, 0); }
+  15% { transform: scale(1.1) rotate(-1.5deg); box-shadow: 4px 4px 0 #0c1830, 0 0 22px rgba(255, 212, 121, 0.65); }
+  30% { transform: scale(1.07) rotate(1.5deg); }
+  45% { transform: scale(1.1) rotate(-1deg); box-shadow: 4px 4px 0 #0c1830, 0 0 26px rgba(255, 212, 121, 0.8); }
+  60% { transform: scale(1.07) rotate(1deg); }
+  75% { transform: scale(1.09) rotate(0deg); box-shadow: 4px 4px 0 #0c1830, 0 0 18px rgba(255, 212, 121, 0.5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .w-draw.needs-draw { animation: none; transform: scale(1.05); }
+}
 
 /* WHOT card faces */
 .whot-card {
@@ -436,3 +455,30 @@ body.mode-whot .holdem-only { display: none !important; }
 .w-buttons { display: flex; gap: 10px; justify-content: center; align-items: center; }
 .w-stats { color: var(--muted); font-size: 13px; align-self: flex-start; }
 #wSeq div { border-left: 2px solid var(--line); padding-left: 8px; }
+
+/* ================= first-visit tour ================= */
+#tourOverlay { position: fixed; inset: 0; z-index: 60; display: none; }
+#tourOverlay.open { display: block; }
+#tourOverlay::before {
+  content: ""; position: absolute; inset: 0;
+  background: rgba(2, 5, 12, 0.62);
+}
+#tourSpot {
+  position: fixed; border: 2px solid var(--gold); border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(2, 5, 12, 0.62), 0 0 28px rgba(255, 212, 121, 0.5);
+  pointer-events: none; transition: all 0.25s ease; z-index: 61;
+}
+#tourTip {
+  position: fixed; z-index: 62;
+  background: #0b1327; border: 1px solid var(--gold); border-radius: 14px;
+  padding: 14px 16px; box-shadow: 0 18px 60px #000d; color: var(--txt);
+}
+#tourTip h3 { margin: 6px 0; font-size: 15px; }
+#tourTip p { margin: 0 0 10px; font-size: 13.5px; color: #c4cfe8; }
+#tourTip .tour-btns { display: flex; gap: 8px; }
+#tourTip .tour-next { padding: 8px 14px; font-size: 13.5px; }
+#tourTip .tour-back, #tourTip .tour-skip { padding: 8px 12px; font-size: 13px; }
+#tourTip .tour-dots { display: flex; gap: 6px; }
+#tourTip .tour-dots i { width: 22px; height: 4px; border-radius: 4px; background: #22304f; }
+#tourTip .tour-dots i.on { background: var(--gold); }
+#tourTip .tour-again { display: flex; gap: 6px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--muted); }

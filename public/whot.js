@@ -7,7 +7,7 @@
 //   unless the victim BLOCKS with the same rank (2-on-2, 5-on-5). Debt accumulates.
 // - 8 suspension: victim misses their turn (attacker replays), unless they pass it
 //   back with another 8.
-// - 14 general market: unblockable, victim draws 2, turn passes (no replay).
+// - 14 general market: unblockable, victim draws 2, caller requests a shape, turn passes (no replay).
 // - 20 can never block. Empty your hand to win instantly (pending debts die).
 export const SHAPES = ['circle', 'triangle', 'cross', 'square', 'star'];
 export const GLYPH = { circle: '●', triangle: '▲', cross: '✚', square: '■', star: '★', whot: '✷' };
@@ -17,7 +17,7 @@ export const SPECIAL = {
   2: 'pick two — draw 2, miss turn (blockable with another 2)',
   5: 'pick three — draw 3, miss turn (blockable with another 5)',
   8: 'suspension — miss turn (pass back with another 8)',
-  14: 'general market — unblockable, draw 2, turn passes',
+  14: 'general market — unblockable, victim draws 2, caller requests a shape, turn passes',
   20: 'WHOT — wild, call a shape (can never block)',
 };
 const SHAPES_RANKS = [1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14];
@@ -125,7 +125,7 @@ export class WhotGame {
     return s;
   }
 
-  // Apply a play. callShape required when playing a 20.
+  // Apply a play. callShape required when playing a 20 or 14.
   play(who, idx, callShape) {
     const hand = who === 'you' ? this.you : this.jev;
     const opp = who === 'you' ? 'jev' : 'you';
@@ -162,6 +162,8 @@ export class WhotGame {
       let drew = 0;
       for (let i = 0; i < 2; i++) { if (this.draw(opp)) drew++; }
       ev.marketDraws = { who: opp, n: drew };
+      this.calledSuit = SHAPES.includes(callShape) ? callShape : null;
+      ev.calledSuit = this.calledSuit;
       this.turn = opp; // general market: no replay, turn passes
     } else {
       this.turn = opp;

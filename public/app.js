@@ -1,5 +1,6 @@
 import { newDeck, evaluate7, compareScores, SUIT_CLASS } from './poker.js';
 import { setMode as whotSetMode, blockHoldem, whotWire } from './whot-ui.js';
+import { maybeTour, startTour } from './tour.js';
 
 const $ = (id) => document.getElementById(id);
 const CHIP = '₦';
@@ -445,6 +446,18 @@ $('tabWhot').onclick = () => switchMode('whot');
 whotWire({ say, log, banner });
 
 render();
+maybeTour();
+// "Take the tour" replay inside the How-it-works panel.
+(() => {
+  const p = $('howPanel');
+  if (!p || $('btnTour')) return;
+  const b = document.createElement('button');
+  b.id = 'btnTour';
+  b.className = 'ghost';
+  b.textContent = '✷ Take the tour';
+  b.onclick = () => startTour();
+  p.appendChild(b);
+})();
 fetch('/api/health').then((r) => r.json()).then((h) => {
   if (!h.key) log('No AI_GATEWAY_API_KEY — Jev will play on heuristic fallback.');
   else log('Connected. Jev (typesafe-ai/jev) is at the table.');

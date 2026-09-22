@@ -15,6 +15,8 @@ export function whotWire({ say, log, banner } = {}) {
   window.addEventListener('whot-cancel-call', () => {
     if (!W.needCall) return;
     W.needCall = false;
+    W.pendingIdx = null;
+    W.pendingRank = null;
     _say('Call cancelled — pick a card.');
     renderWhot();
   });
@@ -27,7 +29,8 @@ const W = {
   game: null, busy: false, mode: 'holdem',
   stats: { hands: 0, you: 0, jev: 0 },
   seq: [],
-  needCall: false, pendingIdx: null,
+  needCall: false, pendingIdx: null, pendingRank: null,
+  _vibTurn: -1,
 };
 
 function setThinking(on) {
@@ -106,8 +109,18 @@ export function renderWhot() {
   // Draw button doubles as the market + the take/serve button.
   const db = $('btnWDraw');
   const p = g.pendingFor('you');
-  db.classList.remove('danger');
-  if (!myTurn) {
+  db.classList.remove('danger', 'needs-draw');
+  // Call-bar label depends on which card is being called.
+  const callLbl = $('wCallLabel');
+  if (callLbl) {
+    callLbl.textContent = W.pendingRank === 14
+      ? 'General Market 14 — request a shape:'
+      : 'WHOT 20 — call a shape:';
+  }
+  if (W.needCall) {
+    db.disabled = true;
+    db.innerHTML = `Pick a shape <span class="w-deck-ico">✷</span>`;
+  } else if (!myTurn) {
     db.disabled = true;
     db.innerHTML = `Draw <span class="w-deck-ico">▤</span> <b>${g.market.length}</b>`;
   } else if (p?.type === 'debt') {
@@ -117,6 +130,16 @@ export function renderWhot() {
   } else if (p?.type === 'suspend') {
     db.disabled = false;
     db.innerHTML = `Serve suspension <span class="w-deck-ico">⏸</span>`;
+  } else if (g.moves('you').length === 0) {
+    // Must-draw: no playable card — transform the button + haptic nudge.
+    db.disabled = false;
+    db.classList.add('needs-draw');
+    db.innerHTML = `Must draw <span class="w-deck-ico">▤</span> <b>${g.market.length}</b>`;
+    const vibKey = `${g.pile.length}:${g.you.length}:${g.market.length}`;
+    if (W._vibTurn !== vibKey) {
+      W._vibTurn = vibKey;
+      try { navigator.vibrate?.(60); } catch { /* noop */ }
+    }
   } else {
     db.disabled = false;
     db.innerHTML = `Draw <span class="w-deck-ico">▤</span> <b>${g.market.length}</b>`;
@@ -149,6 +172,7 @@ function beginTurn(who, note) {
     }
     if (p?.type === 'debt') say(`⚠ PICK ${p.rank === 2 ? 'TWO' : 'THREE'} ×${p.n} on you — click a ${p.rank} to BLOCK, or Take ${p.n} (miss turn).`);
     else if (p?.type === 'suspend') say('⏸ You are SUSPENDED — click an 8 to pass it back, or Serve it.');
+    else if (!g.moves('you').length) say(`No match for ${cardLabel(g.top)} — hit Must draw.`);
     else say(note || `Your move — top ${cardLabel(g.top)}. Match shape/number, or draw.`);
     renderWhot();
   } else {
@@ -190,11 +214,15 @@ function playerPick(idx) {
   const c = g.you[idx];
   if (!g.canPlay('you', c)) return;
   clearTimeout(W._drawnPlayTimer);
-  if (c.r === 20) {
-    const counts = {};
-    g.you.forEach((x) => { if (x.r !== 20) counts[x.s] = (counts[x.s] || 0) + 1; });
-    const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-    doPlay(idx, best ? best[0] : 'circle');
+  if (c.r === 20 || c.r === 14) {
+    // Stage the card, then make the player pick the shape to call/request.
+    W.needCall = true;
+    W.pendingIdx = idx;
+    W.pendingRank = c.r;
+    say(c.r === 14
+      ? 'General Market! Pick the shape you want to request.'
+      : 'WHOT! Pick the shape you want to call.');
+    renderWhot();
     return;
   }
   doPlay(idx, null);
@@ -202,15 +230,19 @@ function playerPick(idx) {
 
 window.whotCall = (shape) => {
   if (!W.needCall) return;
+  const idx = W.pendingIdx;
   W.needCall = false;
+  W.pendingIdx = null;
+  W.pendingRank = null;
   renderWhot();
-  doPlay(W.pendingIdx, shape);
+  doPlay(idx, shape);
 };
 
 window.whotCallCancel = () => {
   if (!W.needCall) return;
   W.needCall = false;
   W.pendingIdx = null;
+  W.pendingRank = null;
   say('Call cancelled — pick a card.');
   renderWhot();
 };
@@ -247,8 +279,8 @@ function doPlay(idx, callShape) {
   const g = W.game;
   clearTimeout(W._drawnPlayTimer);
   const ev = g.play('you', idx, callShape);
-  if (!ev) return;
-  W.seq.push(`you play ${cardLabel(ev.card)}${ev.calledSuit ? ' → ' + ev.calledSuit : ''}${ev.debtSet ? ` (debt ×${ev.debtSet.n})` : ''}`);
+  if (!ev) { W.needCall = false; W.pendingIdx = null; W.pendingRank = null; renderWhot(); return; }
+  W.seq.push(`you play ${cardLabel(ev.card)}${ev.calledSuit ? ' → ' + ev.calledSuit : ''}${ev.debtSet ? ` (debt ×${ev.debtSet.n})` : ''}${ev.marketDraws ? ` (market +${ev.marketDraws.n})` : ''}`);
   log(describePlay(ev, 'you'), 'you');
   applyEvent(ev);
 }
@@ -283,6 +315,12 @@ function finish(winner) {
 }
 
 // ---------- Jev ----------
+function bestCallShape(hand) {
+  const counts = {};
+  hand.forEach((x) => { if (x.r !== 20 && x.s) counts[x.s] = (counts[x.s] || 0) + 1; });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'circle';
+}
+
 function buildJevState() {
   const g = W.game;
   const playable = g.moves('jev');
@@ -292,18 +330,37 @@ function buildJevState() {
     const c = m.card;
     choices[`p${k}`] = c.r === 20
       ? 'play 20 WHOT (wild; you then call a shape to land on the human)'
-      : `play ${c.r} ${GLYPH[c.s]}${SPECIAL[c.r] ? ' — ' + SPECIAL[c.r] : ''}`;
+      : c.r === 14
+        ? `play 14 GENERAL MARKET (human draws 2; you then request a shape) — ${c.r} ${GLYPH[c.s]}`
+        : `play ${c.r} ${GLYPH[c.s]}${SPECIAL[c.r] ? ' — ' + SPECIAL[c.r] : ''}`;
   });
   if (p?.type === 'debt') choices.take = `take the debt: draw ${p.n} and MISS your turn`;
   else if (p?.type === 'suspend') choices.serve = 'serve the suspension: MISS your turn';
   else if (playable.length < 2) choices.draw = 'draw from the market and pass';
 
-  let instructions = 'WHOT (Nigerian shedding game). Match top by SHAPE or NUMBER. 1 = play again. 20 = wild (call a shape). Empty your hand first. Which move?';
+  let instructions = 'WHOT (Nigerian shedding game). Match top by SHAPE or NUMBER. 1 = play again. 20 = wild (call a shape). 14 = general market (human draws 2, you request a shape). Empty your hand first. Which move?';
   if (p?.type === 'debt') instructions = `PICK ${p.rank === 2 ? 'TWO' : 'THREE'} ×${p.n} is on YOU. Block it by playing a ${p.rank}, or TAKE it (draw ${p.n}, miss your turn) and let the human replay. Which move?`;
   else if (p?.type === 'suspend') instructions = 'You are SUSPENDED. Pass it back with an 8, or SERVE it (miss your turn) and let the human replay. Which move?';
 
+  const needsCall = playable.some((m) => m.card.r === 20 || m.card.r === 14);
+  const shapeCounts = {};
+  g.jev.forEach((x) => { if (x.r !== 20 && x.s) shapeCounts[x.s] = (shapeCounts[x.s] || 0) + 1; });
+
   const questions = {
     action: { type: 'choice', instructions, criteria: choices },
+    ...(needsCall ? {
+      callShape: {
+        type: 'choice',
+        instructions: 'If you play 20 WHOT or 14 General Market, which shape do you call/request? Pick the shape you hold most of so you can follow it.',
+        criteria: {
+          circle: `request ● circle (you hold ${shapeCounts.circle || 0})`,
+          triangle: `request ▲ triangle (you hold ${shapeCounts.triangle || 0})`,
+          cross: `request ✚ cross (you hold ${shapeCounts.cross || 0})`,
+          square: `request ■ square (you hold ${shapeCounts.square || 0})`,
+          star: `request ★ star (you hold ${shapeCounts.star || 0})`,
+        },
+      },
+    } : {}),
     handStrength: {
       type: 'score',
       instructions: 'How is your position?',
@@ -395,14 +452,16 @@ async function jevWhotTurn() {
   const m = playable[+moveKey.slice(1)];
   if (!m) { g.turn = 'you'; beginTurn('you'); return; }
   let callShape = null;
-  if (m.card.r === 20) {
-    const counts = {};
-    g.jev.forEach((x) => { if (x.r !== 20) counts[x.s] = (counts[x.s] || 0) + 1; });
-    callShape = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'circle';
+  if (m.card.r === 20 || m.card.r === 14) {
+    const asked = out?.answers?.callShape?.choice;
+    callShape = ['circle', 'triangle', 'cross', 'square', 'star'].includes(asked)
+      ? asked
+      : bestCallShape(g.jev);
+    if (asked && !['circle', 'triangle', 'cross', 'square', 'star'].includes(asked)) reason += ' → call fallback: majority shape';
   }
   const ev = g.play('jev', m.idx, callShape);
   if (!ev) { g.turn = 'you'; beginTurn('you'); return; }
-  W.seq.push(`jev play ${cardLabel(ev.card)}${ev.calledSuit ? ' → ' + ev.calledSuit : ''}${ev.debtSet ? ` (debt ×${ev.debtSet.n})` : ''}`);
+  W.seq.push(`jev play ${cardLabel(ev.card)}${ev.calledSuit ? ' → ' + ev.calledSuit : ''}${ev.debtSet ? ` (debt ×${ev.debtSet.n})` : ''}${ev.marketDraws ? ` (market +${ev.marketDraws.n})` : ''}`);
   log(describePlay(ev, 'jev'), 'jev');
   applyEvent(ev);
 }
@@ -449,7 +508,7 @@ export function whotStart() {
   clearTimeout(W._drawnPlayTimer);
   W.game = new WhotGame();
   W.seq = [];
-  W.needCall = false; W.pendingIdx = null;
+  W.needCall = false; W.pendingIdx = null; W.pendingRank = null; W._vibTurn = -1;
   log('— WHOT: new game (60-card deck, 6 cards each, you lead) —');
   say(`WHOT! Top card: ${W.game.top.r} ${GLYPH[W.game.top.s]}. Play a matching shape/number, or draw.`);
   renderWhot();

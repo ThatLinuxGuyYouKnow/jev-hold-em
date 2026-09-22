@@ -73,7 +73,7 @@
 
         <div class="w-controls">
           <div class="w-callbar hidden" id="wCallBar">
-            <span>Call a shape:</span>
+            <span id="wCallLabel">Call a shape:</span>
             <button class="w-call" onclick="whotCall('circle')">● circle</button>
             <button class="w-call" onclick="whotCall('triangle')">▲ triangle</button>
             <button class="w-call" onclick="whotCall('cross')">✚ cross</button>
@@ -86,7 +86,7 @@
             <button id="btnWDeal" class="primary">New WHOT game</button>
             <span id="wStats" class="muted small"></span>
           </div>
-          <div class="w-rules">1 hold-on · 2 pick-two · 5 pick-three · 8 suspension · 14 general market · 20 WHOT wild &nbsp;—&nbsp; block 2↔2, 5↔5, 8↔8 · 14 &amp; 20 can’t be blocked · taker misses turn</div>
+          <div class="w-rules">1 hold-on · 2 pick-two · 5 pick-three · 8 suspension · 14 general market (draw 2 + request shape) · 20 WHOT wild &nbsp;—&nbsp; block 2↔2, 5↔5, 8↔8 · 14 &amp; 20 can’t be blocked · taker misses turn</div>
           <div id="wSeq" class="w-seq"></div>
         </div>
       </div>
