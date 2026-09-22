@@ -21,6 +21,10 @@
     <span class="brand-text"><strong>Jev Hold'em</strong><small>Texas Hold'em&nbsp;&nbsp;•&nbsp;&nbsp;1 v 1&nbsp;&nbsp;•&nbsp;&nbsp;Player vs Bot</small></span>
   </div>
   <div class="session">
+    <div class="mode-tabs" role="tablist">
+      <button id="tabHoldem" class="mode-tab active" role="tab">♠ Hold'em</button>
+      <button id="tabWhot" class="mode-tab" role="tab">✷ WHOT</button>
+    </div>
     <span class="stat">Hands <b id="statHands">0</b></span>
     <span class="stat">You <b id="statYou">+0</b></span>
     <span class="stat">Jev <b id="statJev">+0</b></span>
@@ -33,8 +37,60 @@
   <section class="table-wrap">
     <div id="banner" class="banner hidden"></div>
 
-    <div class="poker-table">
-      <div class="table-content">
+    <!-- ================= WHOT table ================= -->
+    <div class="whot-table hidden" id="whotTable">
+      <div class="whot-content">
+        <div class="w-seat w-seat-top">
+          <div class="avatar bot-avatar">🤖</div>
+          <div class="plate">
+            <div class="pname">Jev <span id="wThinking" class="thinking hidden">thinking…</span></div>
+            <div class="pstack"><span id="wJevCount">6</span> cards left · shed <span id="wJevStack">0</span></div>
+          </div>
+          <div id="wJevCards" class="cards mini"></div>
+        </div>
+
+        <div class="w-middle">
+          <div class="w-market-box">
+            <div class="w-market-deck"><span>✷</span></div>
+            <div class="w-market-lbl">market <b id="wMarket">48</b></div>
+          </div>
+          <div class="w-pile-box">
+            <div id="wPile" class="w-pile"></div>
+            <div id="wCalledSuit" class="w-called"></div>
+            <div id="wThreat" class="w-threat hidden"></div>
+            <div id="wMsg" class="table-msg">Press “New WHOT game” to start.</div>
+          </div>
+        </div>
+
+        <div class="w-seat w-seat-bottom">
+          <div id="wYouCards" class="cards mini"></div>
+          <div class="plate you">
+            <div class="pname">You</div>
+            <div class="pstack"><span id="wYouStack">0</span> shed · <span id="wHandMeta"></span></div>
+          </div>
+          <div id="wHand" class="cards hand"></div>
+        </div>
+
+        <div class="w-controls">
+          <div class="w-callbar hidden" id="wCallBar">
+            <span>Call a shape:</span>
+            <button class="w-call" onclick="whotCall('circle')">● circle</button>
+            <button class="w-call" onclick="whotCall('triangle')">▲ triangle</button>
+            <button class="w-call" onclick="whotCall('cross')">✚ cross</button>
+            <button class="w-call" onclick="whotCall('square')">■ square</button>
+            <button class="w-call" onclick="whotCall('star')">★ star</button>
+            <button class="w-call cancel" onclick="whotCallCancel()">cancel</button>
+          </div>
+          <div class="btn-row">
+            <button id="btnWDraw" class="w-draw">Draw <span class="w-deck-ico">▤</span> <b>48</b></button>
+            <button id="btnWDeal" class="primary">New WHOT game</button>
+            <span id="wStats" class="muted small"></span>
+          </div>
+          <div class="w-rules">1 hold-on · 2 pick-two · 5 pick-three · 8 suspension · 14 general market · 20 WHOT wild &nbsp;—&nbsp; block 2↔2, 5↔5, 8↔8 · 14 &amp; 20 can’t be blocked · taker misses turn</div>
+          <div id="wSeq" class="w-seq"></div>
+        </div>
+      </div>
+    </div>
         <div class="seat bot-seat">
           <div class="hole-backing" aria-hidden="true"><i></i><i></i></div>
           <div class="player">
@@ -67,13 +123,13 @@
       </div>
     </div>
 
-    <div class="action-bar">
+    <div class="action-bar holdem-only">
       <button id="btnFold" class="act fold"><span class="ic">⊖</span> Fold</button>
       <button id="btnCheckCall" class="act check">○ Check</button>
       <button id="btnBetRaise" class="act bet">◉ Bet</button>
     </div>
 
-    <div class="utility-row">
+    <div class="utility-row holdem-only">
       <button id="btnDeal" class="primary">Deal hand</button>
       <button id="btnAllIn" class="danger">All-in</button>
       <label class="size">Size ₦ <b id="sizeVal">20</b>
@@ -121,6 +177,11 @@
 </main>
 
 <script type="module" src="app.js"></script>
-</body>
+<script>
+  function whotCallCancel() {
+    const ev = new CustomEvent('whot-cancel-call');
+    window.dispatchEvent(ev);
+  }
+</script>
 </body>
 </html>

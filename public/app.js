@@ -1,4 +1,5 @@
 import { newDeck, evaluate7, compareScores, SUIT_CLASS } from './poker.js';
+import { setMode as whotSetMode, blockHoldem, whotWire } from './whot-ui.js';
 
 const $ = (id) => document.getElementById(id);
 const CHIP = '₦';
@@ -63,7 +64,10 @@ function log(msg, cls = '') {
   $('log').prepend(el);
 }
 
-function say(msg) { $('tableMsg').textContent = msg; }
+function say(msg) {
+  const t = $('tableMsg'); if (t) t.textContent = msg;
+  const w = $('wMsg'); if (w) w.textContent = msg; // both targets; mode CSS shows the right one
+}
 
 function banner(msg, ms = 2600) {
   const b = $('banner');
@@ -78,14 +82,14 @@ function toCallFor(who) {
 
 function updateControls() {
   const toCall = toCallFor('hero');
-  const canAct = M.live && !M.busy && M.street !== 'showdown';
+  const canAct = M.live && !M.busy && M.street !== 'showdown' && !blockHoldem();
   const myTurn = canAct && isHeroTurn();
-  $('btnDeal').disabled = M.live || M.busy;
+  $('btnDeal').disabled = M.live || M.busy || blockHoldem();
   $('btnFold').disabled = !myTurn || toCall === 0;
   $('btnCheckCall').disabled = !myTurn;
   $('btnCheckCall').innerHTML = toCall > 0 ? `Call ${CHIP}${Math.min(toCall, M.heroStack)}` : '○ Check';
-  $('btnBetRaise').disabled = !myTurn || M.heroStack <= toCall;
-  $('btnAllIn').disabled = !myTurn || M.heroStack <= 0;
+  $('btnBetRaise').disabled = !myTurn || M.heroStack <= toCall || blockHoldem();
+  $('btnAllIn').disabled = !myTurn || M.heroStack <= 0 || blockHoldem();
   const slider = $('sizeSlider');
   slider.max = Math.max(10, M.heroStack);
   slider.value = Math.min(+slider.value || 20, M.heroStack);
@@ -414,7 +418,7 @@ function settle(msg, winner, revealed) {
 }
 
 // ---------- wiring ----------
-$('btnDeal').onclick = () => { if (!M.live && !M.busy) startHand(); };
+$('btnDeal').onclick = () => { if (!blockHoldem() && !M.live && !M.busy) startHand(); };
 $('btnNew').onclick = resetMatch;
 $('btnSettings').onclick = () => {
   const p = $('howPanel');
@@ -425,6 +429,20 @@ $('btnCheckCall').onclick = () => playerAct('checkcall');
 $('btnBetRaise').onclick = () => playerAct('betraise');
 $('btnAllIn').onclick = () => playerAct('allin');
 $('sizeSlider').oninput = (e) => { $('sizeVal').textContent = e.target.value; };
+
+// ---------- mode switching (Hold'em / WHOT) ----------
+let currentMode = 'holdem';
+function switchMode(mode) {
+  if (currentMode === mode) return;
+  currentMode = mode;
+  $('tabHoldem').classList.toggle('active', mode === 'holdem');
+  $('tabWhot').classList.toggle('active', mode === 'whot');
+  whotSetMode(mode);
+  updateControls();
+}
+$('tabHoldem').onclick = () => switchMode('holdem');
+$('tabWhot').onclick = () => switchMode('whot');
+whotWire({ say, log, banner });
 
 render();
 fetch('/api/health').then((r) => r.json()).then((h) => {

@@ -96,19 +96,27 @@ function decideBet(answers, confidence, state) {
   return { executed, amount, reason };
 }
 
-async function handleJev(state) {
+async function handleJev(state, clientQuestions) {
   const t0 = performance.now();
-  const questions = holdemQuestions(state);
+  const questions = clientQuestions ?? holdemQuestions(state);
   try {
     const result = await evaluate({ model: 'typesafe-ai/jev', state, questions });
     const ms = Math.round(performance.now() - t0);
     const confidence = result.providerMetadata?.typesafe?.confidence ?? {};
+    if (clientQuestions) {
+      // Custom game (WHOT etc.) — client owns move execution.
+      return { answers: result.answers, confidence, usage: result.usage, ms, fallback: false };
+    }
     const bet = decideBet(result.answers, confidence, state);
     return {
       answers: result.answers, confidence,
       usage: result.usage, ms, fallback: false, ...bet,
     };
   } catch (err) {
+    if (clientQuestions) {
+      // Let the client apply its own fallback logic.
+      return { answers: null, fallback: true, ms: Math.round(performance.now() - t0), error: String(err).slice(0, 300) };
+    }
     const fb = fallbackDecision(state);
     const bet = decideBet(fb.answers, fb.confidence, state);
     return { ...fb, ms: Math.round(performance.now() - t0), error: String(err).slice(0, 300), ...bet };
@@ -155,8 +163,10 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (req.method === 'POST' && url.pathname === '/api/jev') {
     try {
-      const state = JSON.parse(await readBody(req));
-      const out = await handleJev(state);
+      const body = JSON.parse(await readBody(req));
+      // body = { state, questions? } — questions given => custom game mode (client executes)
+      const state = body.state ?? body;
+      const out = await handleJev(state, body.questions ?? null);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(out));
     } catch (e) {
