@@ -1,0 +1,19 @@
+{
+  "name": "jev-proto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "demo": "node bluff-vs-jev.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "ai": "^7.0.109",
+    "dotenv": "^18.0.2"
+  }
+}
