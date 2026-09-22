@@ -4,7 +4,7 @@
 
 <h1 align="center">Jev Hold'em</h1>
 
-<p align="center">Heads-up Texas Hold'em — <b>you vs Jev</b>, the type-safe model (<code>typesafe-ai/jev</code>).<br />
+<p align="center">Heads-up Texas Hold'em - <b>you vs Jev</b>, the type-safe model (<code>typesafe-ai/jev</code>).<br />
 Dark-table UI, Naira (₦) stacks, table talk, and a live view into Jev's brain.</p>
 
 ## Play
@@ -26,17 +26,17 @@ PORT=3000
 - 1000 ₦ stacks, blinds 5/10, button alternates every hand.
 - **Deal hand** starts; action follows heads-up rules (button acts first pre-flop, big blind acts first after).
 - Your controls:
-  - **Fold** / **Check–Call** / **Bet–Raise** — the main action bar.
-  - **Size slider** — sets your bet/raise amount (the green button reads it live, e.g. `◉ Bet ₦40`). Capped at your stack.
-  - **All-in** — shoves regardless of the slider.
-  - **Table talk** — anything you type is snapshotted per street (`flop: you say "…"`) and fed to Jev's bluff-detector, so your story has to stay consistent.
+  - **Fold** / **Check–Call** / **Bet–Raise** - the main action bar.
+  - **Size slider** - sets your bet/raise amount (the green button reads it live, e.g. `◉ Bet ₦40`). Capped at your stack.
+  - **All-in** - shoves regardless of the slider.
+  - **Table talk** - anything you type is snapshotted per street (`flop: you say "…"`) and fed to Jev's bluff-detector, so your story has to stay consistent.
 - Runouts, showdowns (real 7-card evaluation), split pots, and match tracking (Hands / You / Jev P&L) are all handled in the browser.
 
 ## Jev's brain
 
 Every Jev turn POSTs structured table state to `/api/jev`, which calls
 `experimental_evaluate({ model: 'typesafe-ai/jev' })` with 4 parallel typed
-questions — no prose, just probabilities:
+questions - no prose, just probabilities:
 
 | Question        | Type    | Meaning                              |
 |-----------------|---------|--------------------------------------|
@@ -48,7 +48,7 @@ questions — no prose, just probabilities:
 Sizing and nerves are **confidence-gated** (`server.mjs → decideBet`):
 
 - Low confidence/probability on a raise → pot-control (check behind / flat).
-- Never folds for free; never bluff-shoves unsure — shoves need a monster or high-confidence read.
+- Never folds for free; never bluff-shoves unsure - shoves need a monster or high-confidence read.
 - If the gateway is unreachable, a Chen-formula heuristic plays instead (badged `fallback` in the UI).
 
 The side panel shows action probabilities, shove/strength/bluff meters,
@@ -77,5 +77,5 @@ public/
 
 ## Notes
 
-- Currency is Naira (₦) — change `CHIP` in `public/app.js` plus the static `₦` in `public/index.html` to switch.
+- Currency is Naira (₦) - change `CHIP` in `public/app.js` plus the static `₦` in `public/index.html` to switch.
 - No build step, no database. Refresh the page for a fresh match, or hit `↻ new match`.

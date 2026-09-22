@@ -123,7 +123,7 @@ function startHand() {
   const sbP = M.button === 0 ? 'hero' : 'jev';
   const bbP = M.button === 0 ? 'jev' : 'hero';
   postBlind(sbP, SB); postBlind(bbP, BB);
-  log(`— Hand #${M.handNo} (${M.button === 0 ? 'you' : 'Jev'} on the button) —`);
+  log(`- Hand #${M.handNo} (${M.button === 0 ? 'you' : 'Jev'} on the button) -`);
   log(`Blinds: ${sbP === 'hero' ? 'you' : 'Jev'} ${CHIP}${SB}, ${bbP === 'hero' ? 'you' : 'Jev'} ${CHIP}${BB}`);
   say(`Your hole: ${M.heroHole.join(' ')}. Action on ${firstActor() === 'hero' ? 'you' : 'Jev'}.`);
   awaiting = firstActor();
@@ -227,12 +227,12 @@ function afterAction(who) {
   if (M.heroStack === 0 || M.jevStack === 0) {
     // all-in: run the board out
     if (M.heroBet === M.jevBet) return runOut();
-    // the other side still must respond (call/fold) — fall through
+    // the other side still must respond (call/fold) - fall through
   }
   if (roundComplete()) { nextStreet(); return; }
   awaiting = who === 'hero' ? 'jev' : 'hero';
   if (awaiting === 'jev') jevTurn();
-  else { say(`Your move — ${describeSpot()}`); render(); }
+  else { say(`Your move - ${describeSpot()}`); render(); }
 }
 
 function describeSpot() {
@@ -271,7 +271,7 @@ async function jevTurn() {
   M.busy = false;
   if (!out || out.error && !out.answers) { // hard failure: check behind / fold to heat
     if (toCallFor('jev') === 0) { M.jevActed = true; hist('jev', 'check (offline)'); }
-    else { endHand('hero', 'Jev disconnected — you take it.'); return; }
+    else { endHand('hero', 'Jev disconnected - you take it.'); return; }
     afterAction('jev');
     return;
   }
@@ -370,7 +370,7 @@ function runOut() {
     render(true);
     setTimeout(deal, 650);
   };
-  say('All-in — running out the board…');
+  say('All-in - running out the board…');
   setTimeout(deal, 650);
 }
 
@@ -387,12 +387,12 @@ function showdown() {
   const cmp = compareScores(h.score, j.score);
   render(true);
   let msg, winner;
-  if (cmp > 0) { M.heroStack += M.pot; winner = 'hero'; msg = `You win ${CHIP}${M.pot} — ${h.name} beats ${j.name}.`; }
-  else if (cmp < 0) { M.jevStack += M.pot; winner = 'jev'; msg = `Jev wins ${CHIP}${M.pot} — ${j.name} beats ${h.name}.`; }
+  if (cmp > 0) { M.heroStack += M.pot; winner = 'hero'; msg = `You win ${CHIP}${M.pot} - ${h.name} beats ${j.name}.`; }
+  else if (cmp < 0) { M.jevStack += M.pot; winner = 'jev'; msg = `Jev wins ${CHIP}${M.pot} - ${j.name} beats ${h.name}.`; }
   else {
     const half = Math.floor(M.pot / 2);
     M.heroStack += half; M.jevStack += M.pot - half; winner = 'split';
-    msg = `Split pot — both show ${h.name}.`;
+    msg = `Split pot - both show ${h.name}.`;
   }
   log(`Showdown: you ${M.heroHole.join(' ')} (${h.name}) vs Jev ${M.jevHole.join(' ')} (${j.name}).`);
   settle(msg, winner, true);
@@ -459,6 +459,6 @@ maybeTour();
   p.appendChild(b);
 })();
 fetch('/api/health').then((r) => r.json()).then((h) => {
-  if (!h.key) log('No AI_GATEWAY_API_KEY — Jev will play on heuristic fallback.');
+  if (!h.key) log('No AI_GATEWAY_API_KEY - Jev will play on heuristic fallback.');
   else log('Connected. Jev (typesafe-ai/jev) is at the table.');
 });

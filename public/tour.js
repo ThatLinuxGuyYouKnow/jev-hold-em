@@ -1,4 +1,4 @@
-// First-visit explainer tour — 4-step spotlight overlay. No deps.
+// First-visit explainer tour - 4-step spotlight overlay. No deps.
 const KEY = 'jev-tour-seen-v1';
 
 function steps() {
@@ -7,7 +7,7 @@ function steps() {
     {
       sel: '.mode-tabs',
       title: 'Hold\u2019em or WHOT?',
-      text: 'You start on Hold\u2019em. Tap \u2717 WHOT any time to switch to Nigerian WHOT vs Jev — your stacks stay separate.',
+      text: 'You start on Hold\u2019em. Tap \u2717 WHOT any time to switch to Nigerian WHOT vs Jev - your stacks stay separate.',
     },
     {
       sel: isWhot ? '#whotTable' : '.board-area',
@@ -20,13 +20,13 @@ function steps() {
       sel: isWhot ? '#btnWDraw' : '.action-bar',
       title: isWhot ? 'Draw when stuck' : 'Your actions',
       text: isWhot
-        ? 'Playable cards glow green. When nothing matches, this button turns gold, shakes and vibrates — hit Must draw.'
+        ? 'Playable cards glow green. When nothing matches, this button turns gold, shakes and vibrates - hit Must draw.'
         : 'Fold / Check-Call / Bet live here on your turn.',
     },
     {
       sel: '.panel.brain',
       title: 'Jev\u2019s brain',
-      text: 'Jev evaluates typed questions every turn — watch action odds and confidence before it moves.',
+      text: 'Jev evaluates typed questions every turn - watch action odds and confidence before it moves.',
     },
   ];
 }

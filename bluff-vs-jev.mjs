@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { experimental_evaluate as evaluate } from 'ai';
 
-// Simplified poker/trader state — human tries to bluff Jev.
+// Simplified poker/trader state - human tries to bluff Jev.
 // Jev sees the table as structured state, returns typed decisions in parallel.
 const hand = {
   game: 'bluff-holdem (demo)',
@@ -51,7 +51,7 @@ try {
   const confidence = result.providerMetadata?.typesafe?.confidence;
   if (confidence) console.log('\nconfidence:', confidence);
 
-  // Confidence-gated routing — the LinkedIn money shot:
+  // Confidence-gated routing - the LinkedIn money shot:
   // act when sure, check/showdown when unsure.
   const action = result.answers.action;
   const actionConf = confidence?.action ?? 0;

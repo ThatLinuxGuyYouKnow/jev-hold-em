@@ -104,7 +104,7 @@ async function handleJev(state, clientQuestions) {
     const ms = Math.round(performance.now() - t0);
     const confidence = result.providerMetadata?.typesafe?.confidence ?? {};
     if (clientQuestions) {
-      // Custom game (WHOT etc.) — client owns move execution.
+      // Custom game (WHOT etc.) - client owns move execution.
       return { answers: result.answers, confidence, usage: result.usage, ms, fallback: false };
     }
     const bet = decideBet(result.answers, confidence, state);
@@ -164,7 +164,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'POST' && url.pathname === '/api/jev') {
     try {
       const body = JSON.parse(await readBody(req));
-      // body = { state, questions? } — questions given => custom game mode (client executes)
+      // body = { state, questions? } - questions given => custom game mode (client executes)
       const state = body.state ?? body;
       const out = await handleJev(state, body.questions ?? null);
       res.writeHead(200, { 'Content-Type': 'application/json' });

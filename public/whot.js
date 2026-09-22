@@ -1,7 +1,7 @@
-// WHOT engine — Nigerian shedding game, 60-card Winad deck. Pure logic, no DOM.
+// WHOT engine - Nigerian shedding game, 60-card Winad deck. Pure logic, no DOM.
 //
 // House rules (standard street Winad):
-// - Match top card by SHAPE or NUMBER. 20 (WHOT) is wild — caller names a shape.
+// - Match top card by SHAPE or NUMBER. 20 (WHOT) is wild - caller names a shape.
 // - 1 hold on: play again. 20: turn passes.
 // - 2 pick-two / 5 pick-three: victim draws and MISSES their turn (attacker replays),
 //   unless the victim BLOCKS with the same rank (2-on-2, 5-on-5). Debt accumulates.
@@ -13,12 +13,12 @@ export const SHAPES = ['circle', 'triangle', 'cross', 'square', 'star'];
 export const GLYPH = { circle: '●', triangle: '▲', cross: '✚', square: '■', star: '★', whot: '✷' };
 export const SHAPE_COLOR = { circle: '#e8b23a', triangle: '#58c470', cross: '#e05b5b', square: '#5b8ee0', star: '#b58be0', whot: '#111827' };
 export const SPECIAL = {
-  1: 'hold on — play again',
-  2: 'pick two — draw 2, miss turn (blockable with another 2)',
-  5: 'pick three — draw 3, miss turn (blockable with another 5)',
-  8: 'suspension — miss turn (pass back with another 8)',
-  14: 'general market — unblockable, victim draws 2, caller requests a shape, turn passes',
-  20: 'WHOT — wild, call a shape (can never block)',
+  1: 'hold on - play again',
+  2: 'pick two - draw 2, miss turn (blockable with another 2)',
+  5: 'pick three - draw 3, miss turn (blockable with another 5)',
+  8: 'suspension - miss turn (pass back with another 8)',
+  14: 'general market - unblockable, victim draws 2, caller requests a shape, turn passes',
+  20: 'WHOT - wild, call a shape (can never block)',
 };
 const SHAPES_RANKS = [1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14];
 const STAR_RANKS = [1, 2, 3, 4, 5, 7, 8];
@@ -56,8 +56,8 @@ export class WhotGame {
     while (SPECIAL[t.r] && guard++ < 60) { this.market.unshift(t); t = this.market.pop(); }
     this.pile.push(t);
     this.calledSuit = null;
-    this.debt = null;    // { n, rank: 2|5, by, target } — pick debt awaiting block/take
-    this.suspend = null; // { by, target } — suspension awaiting pass-back/serve
+    this.debt = null;    // { n, rank: 2|5, by, target } - pick debt awaiting block/take
+    this.suspend = null; // { by, target } - suspension awaiting pass-back/serve
     this.turn = 'you';
     this.over = false;
   }
@@ -144,14 +144,14 @@ export class WhotGame {
       this.calledSuit = callShape; ev.calledSuit = callShape;
       this.turn = opp;
     } else if (c.r === 1) {
-      ev.again = true; // hold on — turn stays
+      ev.again = true; // hold on - turn stays
     } else if (c.r === 8) {
       this.suspend = { by: who, target: opp };
       ev.suspendSet = true;
       this.turn = opp;
     } else if (c.r === 2 || c.r === 5) {
       if (this.debt && this.debt.target === who && this.debt.rank === c.r) {
-        this.debt.n += PICK_VALUE[c.r]; // BLOCKED — debt grows, passes back
+        this.debt.n += PICK_VALUE[c.r]; // BLOCKED - debt grows, passes back
       } else {
         this.debt = { n: PICK_VALUE[c.r], rank: c.r };
       }
