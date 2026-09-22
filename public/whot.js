@@ -13,12 +13,12 @@ export const SHAPES = ['circle', 'triangle', 'cross', 'square', 'star'];
 export const GLYPH = { circle: '●', triangle: '▲', cross: '✚', square: '■', star: '★', whot: '✷' };
 export const SHAPE_COLOR = { circle: '#e8b23a', triangle: '#58c470', cross: '#e05b5b', square: '#5b8ee0', star: '#b58be0', whot: '#111827' };
 export const SPECIAL = {
-  1: 'hold on - play again',
-  2: 'pick two - draw 2, miss turn (blockable with another 2)',
-  5: 'pick three - draw 3, miss turn (blockable with another 5)',
-  8: 'suspension - miss turn (pass back with another 8)',
-  14: 'general market - unblockable, victim draws 2, caller requests a shape, turn passes',
-  20: 'WHOT - wild, call a shape (can never block)',
+  1: 'hold on: play again',
+  2: 'pick two: draw 2, miss turn (blockable with another 2)',
+  5: 'pick three: draw 3, miss turn (blockable with another 5)',
+  8: 'suspension: miss turn (pass back with another 8)',
+  14: 'general market: unblockable, victim draws 2, caller requests a shape, turn passes',
+  20: 'WHOT: wild, call a shape (can never block)',
 };
 const SHAPES_RANKS = [1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14];
 const STAR_RANKS = [1, 2, 3, 4, 5, 7, 8];

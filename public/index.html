@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jev Hold'em - Texas Hold'em 1v1 Player vs Bot</title>
+<title>Jev Hold'em | Texas Hold'em 1v1, Player vs Bot</title>
 <meta name="theme-color" content="#05080f" />
-<meta name="description" content="Jev Hold'em - heads-up Texas Hold'em, you vs the type-safe bot." />
+<meta name="description" content="Jev Hold'em: heads-up Texas Hold'em, you vs the type-safe bot." />
 <link rel="icon" href="favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
@@ -86,7 +86,7 @@
             <button id="btnWDeal" class="primary">New WHOT game</button>
             <span id="wStats" class="muted small"></span>
           </div>
-          <div class="w-rules">1 hold-on · 2 pick-two · 5 pick-three · 8 suspension · 14 general market (draw 2 + request shape) · 20 WHOT wild &nbsp;-&nbsp; block 2↔2, 5↔5, 8↔8 · 14 &amp; 20 can’t be blocked · taker misses turn</div>
+          <div class="w-rules">1 hold-on · 2 pick-two · 5 pick-three · 8 suspension · 14 general market (draw 2 + request shape) · 20 WHOT wild &nbsp;·&nbsp; block 2↔2, 5↔5, 8↔8 · 14 &amp; 20 can’t be blocked · taker misses turn</div>
           <div id="wSeq" class="w-seq"></div>
         </div>
       </div>
@@ -148,7 +148,7 @@
 
     <div class="panel brain">
       <h2>Jev's brain <span id="fbBadge" class="badge hidden">fallback</span></h2>
-      <div id="brainEmpty" class="muted">No decision yet. Jev evaluates 4 typed questions in parallel on each of its turns - no prose, just probabilities.</div>
+      <div id="brainEmpty" class="muted">No decision yet. Jev evaluates 4 typed questions in parallel on each of its turns: no prose, just probabilities.</div>
       <div id="brain" class="hidden">
         <div class="q"><div class="qhead"><span>action</span><span id="latency" class="muted"></span></div>
           <div id="actionBars"></div></div>
@@ -170,7 +170,7 @@
 
     <div class="panel how" id="howPanel">
       <h2>How it works</h2>
-      <p>Each Jev turn calls <code>experimental_evaluate({model:'typesafe-ai/jev'})</code> with the table as structured state and 4 parallel questions (choice + booleans + score). Low-confidence raises are gated to pot-control - watch the confidence bar dip before it checks behind.</p>
+      <p>Each Jev turn calls <code>experimental_evaluate({model:'typesafe-ai/jev'})</code> with the table as structured state and 4 parallel questions (choice + booleans + score). Low-confidence raises are gated to pot-control. Watch the confidence bar dip before it checks behind.</p>
       <p>Table talk is snapshotted into the per-street history on every action, so Jev reads your story as a sequence (<code>flop: you say "..."</code> → <code>turn: you say "..."</code>) and its bluff-detector weighs contradictions across streets.</p>
     </div>
   </aside>

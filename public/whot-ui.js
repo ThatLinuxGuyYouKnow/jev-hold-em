@@ -17,7 +17,7 @@ export function whotWire({ say, log, banner } = {}) {
     W.needCall = false;
     W.pendingIdx = null;
     W.pendingRank = null;
-    _say('Call cancelled - pick a card.');
+    _say('Call cancelled. Pick a card.');
     renderWhot();
   });
 }
@@ -41,7 +41,7 @@ function setThinking(on) {
 function cardLabel(c) {
   if (c.r === 20) return 'WHOT ✷';
   const sp = SPECIAL[c.r];
-  return `${c.r} ${GLYPH[c.s]}${sp ? ' · ' + sp.split(' - ')[0] : ''}`;
+  return `${c.r} ${GLYPH[c.s]}${sp ? ' · ' + sp.split(': ')[0] : ''}`;
 }
 
 function whotCardEl(c, opts = {}) {
@@ -57,7 +57,7 @@ function whotCardEl(c, opts = {}) {
   if (opts.pickable) {
     d.dataset.idx = opts.idx;
     d.onclick = () => playerPick(+d.dataset.idx);
-    if (c.r === 20) d.title = 'WHOT wild - click to play (auto-calls your strongest shape)';
+    if (c.r === 20) d.title = 'WHOT wild: click to play (auto-calls your strongest shape)';
   }
   return d;
 }
@@ -68,10 +68,10 @@ function threatText(g, who) {
   if (!p) return '';
   if (p.type === 'debt') {
     const blockers = g.moves(who).length;
-    return `⚠ PICK ${p.rank === 2 ? 'TWO' : 'THREE'} ×${p.n} on ${who === 'you' ? 'YOU' : 'JEV'} - ${blockers ? `block with a ${p.rank} or take ${p.n} (miss turn)` : `no ${p.rank} to block - takes ${p.n}`}`;
+    return `⚠ PICK ${p.rank === 2 ? 'TWO' : 'THREE'} ×${p.n} on ${who === 'you' ? 'YOU' : 'JEV'}: ${blockers ? `block with a ${p.rank} or take ${p.n} (miss turn)` : `no ${p.rank} to block, takes ${p.n}`}`;
   }
   const holders = g.moves(who).length;
-  return `⏸ SUSPENDED ${who === 'you' ? 'YOU' : 'JEV'} - ${holders ? 'pass back an 8 or serve it' : 'no 8 - serves it'}`;
+  return `⏸ SUSPENDED ${who === 'you' ? 'YOU' : 'JEV'}: ${holders ? 'pass back an 8 or serve it' : 'no 8, serves it'}`;
 }
 
 export function renderWhot() {
@@ -114,8 +114,8 @@ export function renderWhot() {
   const callLbl = $('wCallLabel');
   if (callLbl) {
     callLbl.textContent = W.pendingRank === 14
-      ? 'General Market 14 - request a shape:'
-      : 'WHOT 20 - call a shape:';
+      ? 'General Market 14: request a shape:'
+      : 'WHOT 20: call a shape:';
   }
   if (W.needCall) {
     db.disabled = true;
@@ -170,10 +170,10 @@ function beginTurn(who, note) {
       if (p.type === 'debt') return autoTakeDebt('you');
       return autoServe('you');
     }
-    if (p?.type === 'debt') say(`⚠ PICK ${p.rank === 2 ? 'TWO' : 'THREE'} ×${p.n} on you - click a ${p.rank} to BLOCK, or Take ${p.n} (miss turn).`);
-    else if (p?.type === 'suspend') say('⏸ You are SUSPENDED - click an 8 to pass it back, or Serve it.');
-    else if (!g.moves('you').length) say(`No match for ${cardLabel(g.top)} - hit Must draw.`);
-    else say(note || `Your move - top ${cardLabel(g.top)}. Match shape/number, or draw.`);
+    if (p?.type === 'debt') say(`⚠ PICK ${p.rank === 2 ? 'TWO' : 'THREE'} ×${p.n} on you: click a ${p.rank} to BLOCK, or Take ${p.n} (miss turn).`);
+    else if (p?.type === 'suspend') say('⏸ You are SUSPENDED: click an 8 to pass it back, or Serve it.');
+    else if (!g.moves('you').length) say(`No match for ${cardLabel(g.top)}. Hit Must draw.`);
+    else say(note || `Your move: top ${cardLabel(g.top)}. Match shape/number, or draw.`);
     renderWhot();
   } else {
     const p = g.pendingFor('jev');
@@ -192,18 +192,18 @@ function autoTakeDebt(who) {
   const g = W.game;
   const r = g.takeDebt(who);
   if (!r) { beginTurn(g.turn); return; }
-  W.seq.push(`${who} takes pick debt (+${r.drew}) - misses turn`);
+  W.seq.push(`${who} takes pick debt (+${r.drew}), misses turn`);
   log(`${who === 'you' ? 'You take' : 'Jev takes'} ${r.drew} and miss${who === 'you' ? '' : 'es'} the turn.`, who === 'you' ? 'you' : 'jev');
-  say(`${who === 'you' ? 'You take' : 'Jev takes'} ${r.drew} - ${r.by === 'you' ? 'your' : "Jev's"} play${r.by === who ? '' : ' (replay)'}.`);
+  say(who === 'you' ? `You take ${r.drew} and miss the turn. Jev replays.` : `Jev takes ${r.drew} and misses the turn. You are up again.`);
   beginTurn(r.by);
 }
 
 function autoServe(who) {
   const g = W.game;
   g.acceptSuspend(who);
-  W.seq.push(`${who} serves suspension - misses turn`);
+  W.seq.push(`${who} serves suspension, misses turn`);
   log(`${who === 'you' ? 'You serve' : 'Jev serves'} the suspension (misses turn).`, who === 'you' ? 'you' : 'jev');
-  say(`${who === 'you' ? 'Suspended - you miss' : 'Jev is suspended - misses'} the turn.`);
+  say(`${who === 'you' ? 'Suspended. You miss' : 'Jev is suspended and misses'} the turn.`);
   beginTurn(g.turn);
 }
 
@@ -243,7 +243,7 @@ window.whotCallCancel = () => {
   W.needCall = false;
   W.pendingIdx = null;
   W.pendingRank = null;
-  say('Call cancelled - pick a card.');
+  say('Call cancelled. Pick a card.');
   renderWhot();
 };
 
@@ -255,22 +255,22 @@ function playerDraw() {
   if (p?.type === 'suspend') return autoServe('you');   // Serve it
   const c = g.draw('you');
   if (!c) { say('Market empty. Pass.'); g.turn = 'jev'; beginTurn('jev'); return; }
-  W.seq.push(`you draw ${cardLabel(c)}${g.canPlay('you', c) ? ' (playable - your go)' : ' (passes)'}`);
+  W.seq.push(`you draw ${cardLabel(c)}${g.canPlay('you', c) ? ' (playable, your go)' : ' (passes)'}`);
   log(`You draw ${cardLabel(c)}.`, 'you');
   if (g.canPlay('you', c)) {
-    say(`You drew ${cardLabel(c)} - it plays! Click it within 6s or the turn passes.`);
+    say(`You drew ${cardLabel(c)} and it plays! Click it within 6s or the turn passes.`);
     renderWhot();
     clearTimeout(W._drawnPlayTimer);
     W._drawnPlayTimer = setTimeout(() => {
       if (W.game === g && g.turn === 'you' && !g.over && W.mode === 'whot' && !W.busy) {
-        log('Turn passes - Jev to move.', 'you');
+        log('Turn passes. Jev to move.', 'you');
         g.turn = 'jev';
         beginTurn('jev');
       }
     }, 6000);
   } else {
     g.turn = 'jev';
-    say('No play - you drew. Jev to move.');
+    say('No play. You drew. Jev to move.');
     beginTurn('jev');
   }
 }
@@ -289,26 +289,26 @@ function describePlay(ev, who) {
   const actor = who === 'you' ? 'You play' : 'Jev plays';
   let m = `${actor} ${cardLabel(ev.card)}`;
   if (ev.calledSuit) m += ` calling ${ev.calledSuit}`;
-  if (ev.debtSet) m += ` - PICK ${ev.debtSet.rank === 2 ? 'TWO' : 'THREE'} ×${ev.debtSet.n}!`;
-  if (ev.suspendSet) m += ' - SUSPENSION!';
-  if (ev.marketDraws) m += ` - market: ${ev.marketDraws.who === 'you' ? 'you draw' : 'Jev draws'} ${ev.marketDraws.n}`;
-  if (ev.winner) m += ' - OUT! 🏁';
+  if (ev.debtSet) m += `: PICK ${ev.debtSet.rank === 2 ? 'TWO' : 'THREE'} ×${ev.debtSet.n}!`;
+  if (ev.suspendSet) m += ': SUSPENSION!';
+  if (ev.marketDraws) m += `. Market: ${ev.marketDraws.who === 'you' ? 'you draw' : 'Jev draws'} ${ev.marketDraws.n}`;
+  if (ev.winner) m += ' and goes OUT! 🏁';
   return m;
 }
 
 function applyEvent(ev) {
   const g = W.game;
   if (ev.winner) { finish(ev.winner); return; }
-  if (ev.card.r === 1) return beginTurn(ev.who, 'Hold on - play again!');
+  if (ev.card.r === 1) return beginTurn(ev.who, 'Hold on, play again!');
   beginTurn(g.turn);
 }
 
 function finish(winner) {
   W.game.over = true;
   W.stats.hands++;
-  if (winner === 'you') { W.stats.you++; say('You empty your hand - WHOT win! 🎉'); banner('You win the WHOT game! 🎉'); }
+  if (winner === 'you') { W.stats.you++; say('You empty your hand. WHOT win! 🎉'); banner('You win the WHOT game! 🎉'); }
   else { W.stats.jev++; say('Jev goes out first. Jev wins.'); banner('Jev wins the WHOT game.'); }
-  log(winner === 'you' ? '- WHOT: you win -' : '- WHOT: Jev wins -', winner === 'you' ? 'you' : 'jev');
+  log(winner === 'you' ? 'WHOT: you win' : 'WHOT: Jev wins', winner === 'you' ? 'you' : 'jev');
   $('wStats').textContent = `games ${W.stats.hands} · you ${W.stats.you} · Jev ${W.stats.jev}`;
   setThinking(false);
   renderWhot();
@@ -331,8 +331,8 @@ function buildJevState() {
     choices[`p${k}`] = c.r === 20
       ? 'play 20 WHOT (wild; you then call a shape to land on the human)'
       : c.r === 14
-        ? `play 14 GENERAL MARKET (human draws 2; you then request a shape) - ${c.r} ${GLYPH[c.s]}`
-        : `play ${c.r} ${GLYPH[c.s]}${SPECIAL[c.r] ? ' - ' + SPECIAL[c.r] : ''}`;
+        ? `play 14 GENERAL MARKET of ${c.r} ${GLYPH[c.s]} (human draws 2; you then request a shape)`
+        : `play ${c.r} ${GLYPH[c.s]}${SPECIAL[c.r] ? ': ' + SPECIAL[c.r] : ''}`;
   });
   if (p?.type === 'debt') choices.take = `take the debt: draw ${p.n} and MISS your turn`;
   else if (p?.type === 'suspend') choices.serve = 'serve the suspension: MISS your turn';
@@ -364,7 +364,7 @@ function buildJevState() {
     handStrength: {
       type: 'score',
       instructions: 'How is your position?',
-      criteria: ['behind - human is shedding faster', 'even', 'ahead - closing out'],
+      criteria: ['behind: human is shedding faster', 'even', 'ahead: closing out'],
     },
     playerClose: {
       type: 'boolean',
@@ -373,7 +373,7 @@ function buildJevState() {
   };
   const state = {
     gameType: 'whot-2p',
-    topCard: g.top.r === 20 ? `20 WHOT - you must play ${g.calledSuit}` : `${g.top.r} ${GLYPH[g.top.s]}`,
+    topCard: g.top.r === 20 ? `20 WHOT (play ${g.calledSuit} now)` : `${g.top.r} ${GLYPH[g.top.s]}`,
     mustPlayShape: g.calledSuit || null,
     pendingDebt: p?.type === 'debt' ? { n: p.n, rank: p.rank } : null,
     pendingSuspend: p?.type === 'suspend' || null,
@@ -419,7 +419,7 @@ async function jevWhotTurn() {
     else { moveKey = playable.length ? 'p0' : firstExtra(choices); reason = `illegal move '${key}' → fallback`; }
   } else {
     moveKey = playable.length ? 'p0' : firstExtra(choices);
-    reason = 'gateway unreachable - heuristic fallback';
+    reason = 'gateway unreachable, using heuristic fallback';
   }
 
   // Confidence gate: unsure + spending a special/block → downshift to a plain card.
@@ -441,9 +441,9 @@ async function jevWhotTurn() {
   if (moveKey === 'serve') return autoServe('jev');
   if (moveKey === 'draw') {
     const c = g.draw('jev');
-    W.seq.push(`jev draw${c ? ' ' + cardLabel(c) : ' (market dry)'} - passes`);
+    W.seq.push(c ? `jev draws ${cardLabel(c)}, passes` : 'jev draws nothing (market dry), passes');
     log(`Jev draws from market (${g.jev.length} cards).`, 'jev');
-    say(c ? 'Jev draws - no play. Your move.' : 'Market empty - Jev passes. Your move.');
+    say(c ? 'Jev draws, no play. Your move.' : 'Market empty. Jev passes. Your move.');
     g.turn = 'you';
     beginTurn('you');
     return;
@@ -478,7 +478,7 @@ function paintWhotBrain(out, choices, moveKey) {
   const box = $('actionBars'); box.innerHTML = '';
   const conf = (out?.confidence?.action) ?? 0;
   const answered = out?.answers?.action?.choice;
-  const short = (s) => (s || '').replace(' - ', ' · ').replace('play ', '').slice(0, 10);
+  const short = (s) => (s || '').replace(': ', ' · ').replace('play ', '').slice(0, 10);
   for (const k of Object.keys(choices)) {
     const pr = probs[k] ?? 0;
     const row = document.createElement('div');
@@ -500,7 +500,7 @@ function paintWhotBrain(out, choices, moveKey) {
   const u = (out?.usage) || {};
   $('usage').textContent = out
     ? `tokens in/out: ${u.inputTokens ?? '?'} / ${u.outputTokens ?? '?'}${out.fallback ? ' · fallback' : ''}`
-    : 'gateway unreachable - heuristic fallback';
+    : 'gateway unreachable, using heuristic fallback';
 }
 
 // ---------- lifecycle ----------
