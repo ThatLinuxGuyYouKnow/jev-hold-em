@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jev Hold'em — Texas Hold'em 1v1 Player vs Bot</title>
+<meta name="theme-color" content="#05080f" />
+<meta name="description" content="Jev Hold'em — heads-up Texas Hold'em, you vs the type-safe bot." />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="bg-suits" aria-hidden="true"><span>♠</span><span>♥</span><span>♦</span><span>♣</span></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon"><img src="logo-light.png" alt="Jev Hold'em spade logo" /></span>
+    <span class="brand-text"><strong>Jev Hold'em</strong><small>Texas Hold'em&nbsp;&nbsp;•&nbsp;&nbsp;1 v 1&nbsp;&nbsp;•&nbsp;&nbsp;Player vs Bot</small></span>
+  </div>
+  <div class="session">
+    <span class="stat">Hands <b id="statHands">0</b></span>
+    <span class="stat">You <b id="statYou">+0</b></span>
+    <span class="stat">Jev <b id="statJev">+0</b></span>
+    <button id="btnNew" class="ghost">↻ new match</button>
+    <button id="btnSettings" class="icon-btn" title="How it works" aria-label="How it works">⚙</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="table-wrap">
+    <div id="banner" class="banner hidden"></div>
+
+    <div class="poker-table">
+      <div class="table-content">
+        <div class="seat bot-seat">
+          <div class="hole-backing" aria-hidden="true"><i></i><i></i></div>
+          <div class="player">
+            <div class="avatar bot-avatar">🤖</div>
+            <div class="plate">
+              <div class="pname">Bot <span id="dealerJev" class="dealer hidden">B</span> <span id="jevThinking" class="thinking hidden">thinking…</span></div>
+              <div class="pstack">₦ <span id="jevStack">1000</span> <span id="jevBet" class="bet"></span></div>
+            </div>
+          </div>
+          <div id="jevCards" class="cards mini"></div>
+        </div>
+
+        <div class="board-area">
+          <div id="streetLabel" class="street"></div>
+          <div class="pot-pill">Pot: ₦&nbsp;<span id="pot">0</span></div>
+          <div id="board" class="cards board"></div>
+          <div id="tableMsg" class="table-msg">Press Deal to start.</div>
+        </div>
+
+        <div class="seat hero-seat">
+          <div id="heroCards" class="cards hand"></div>
+          <div class="player">
+            <div class="avatar hero-avatar">🧑</div>
+            <div class="plate you">
+              <div class="pname">You <span id="dealerYou" class="dealer hidden">B</span></div>
+              <div class="pstack">₦ <span id="heroStack">1000</span> <span id="heroBet" class="bet"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button id="btnFold" class="act fold"><span class="ic">⊖</span> Fold</button>
+      <button id="btnCheckCall" class="act check">○ Check</button>
+      <button id="btnBetRaise" class="act bet">◉ Bet</button>
+    </div>
+
+    <div class="utility-row">
+      <button id="btnDeal" class="primary">Deal hand</button>
+      <button id="btnAllIn" class="danger">All-in</button>
+      <label class="size">Size ₦ <b id="sizeVal">20</b>
+        <input id="sizeSlider" type="range" min="10" max="500" step="5" value="20" />
+      </label>
+      <input id="chat" type="text" maxlength="120" placeholder="Table talk… try to bluff Jev (e.g. 'i definitely do NOT have aces')" />
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="panel pot-panel">
+      <div class="pot-row"><span class="lbl">Pot</span><strong>₦ <span id="potMirror">0</span></strong></div>
+      <hr />
+      <div class="pot-row"><span class="lbl">Your Stack</span><strong>₦ <span id="heroStackMirror">1000</span></strong></div>
+    </div>
+
+    <div class="panel brain">
+      <h2>Jev's brain <span id="fbBadge" class="badge hidden">fallback</span></h2>
+      <div id="brainEmpty" class="muted">No decision yet. Jev evaluates 4 typed questions in parallel on each of its turns — no prose, just probabilities.</div>
+      <div id="brain" class="hidden">
+        <div class="q"><div class="qhead"><span>action</span><span id="latency" class="muted"></span></div>
+          <div id="actionBars"></div></div>
+        <div class="meters">
+          <div>bluff shove <b id="mShove">–</b><div class="meter"><i id="barShove"></i></div></div>
+          <div>hand strength <b id="mStr">–</b><div class="meter"><i id="barStr"></i></div></div>
+          <div>thinks YOU bluff <b id="mBluff">–</b><div class="meter"><i id="barBluff"></i></div></div>
+          <div>confidence <b id="mConf">–</b><div class="meter"><i id="barConf"></i></div></div>
+        </div>
+        <div id="reason" class="reason"></div>
+        <div id="usage" class="muted small"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Hand log</h2>
+      <div id="log" class="log"></div>
+    </div>
+
+    <div class="panel how" id="howPanel">
+      <h2>How it works</h2>
+      <p>Each Jev turn calls <code>experimental_evaluate({model:'typesafe-ai/jev'})</code> with the table as structured state and 4 parallel questions (choice + booleans + score). Low-confidence raises are gated to pot-control — watch the confidence bar dip before it checks behind.</p>
+      <p>Table talk is snapshotted into the per-street history on every action, so Jev reads your story as a sequence (<code>flop: you say "..."</code> → <code>turn: you say "..."</code>) and its bluff-detector weighs contradictions across streets.</p>
+    </div>
+  </aside>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</body>
+</html>
